@@ -31,6 +31,28 @@ def histoic_peasant_cards(cards, sets, fs=[]):
   do.extend(fs)
   return historic_cards(cards, sets, do)
 
+def txt_deck_to_mtga(deck, mtgaPool):
+
+  def mk_mtga_deck_entry(mtgaPool, qan, name):
+    return ' '.join([
+      qan,
+      '(' + get_next_set(mtgaPool, name) + ')',
+      get_next_collector_number(mtgaPool, name)
+    ])
+
+  mutableDecklist = ['Deck']
+  for qtyAndNameTxt in deck.splitlines():
+    if qtyAndNameTxt == 'Sideboard':
+      mutableDecklist.extend(['', 'Sideboard'])
+      continue
+    qtyAndName = qtyAndNameTxt.split(' ', 1)
+    qty = qtyAndName[0]
+    name = qtyAndName[1]
+    mutableDecklist.append(mk_mtga_deck_entry(
+      mtgaPool, qtyAndNameTxt, name
+    ))
+  return '\n'.join(mutableDecklist)
+
 def all_cards(source_file):
   fh = open(source_file)
   fc = fh.read()
@@ -96,6 +118,17 @@ def was_printed_in_sets(card, sets):
 def keep_historic_printings(card):
   return was_printed_in_sets(card, historic_sets())
 
+###################
+# Deck processing #
+###################
+
+def get_next_set(cards, name):
+  return cards[name]['printings'][0]
+
+def get_next_collector_number(cards, name):
+  set = cards[name]['printings'][0] # TODO make it faster.
+  return cards[name]['printings_info'][set]['number']
+
 def main():
 
   def dump_cards(name, cards):
@@ -112,10 +145,20 @@ def main():
   results.extend([
     ('HistoricPeasant',    run_monad_filtermap(historicCards, [keep_peasant])),
     ('HistoricCommons',    run_monad_filtermap(historicCards, [keep_rarity_curried('common')])),
-    ('HistoricUncommons',  run_monad_filtermap(historicCards, [keep_rarity_curried('uncommon')]))
+    ('HistoricUncommons',  run_monad_filtermap(historicCards, [keep_rarity_curried('uncommon')])),
   ])
   for (name, cards1) in results:
     dump_cards(name, cards1)
 
+def main2():
+  cards = all_cards_priv()
+  sets  = all_sets_priv()
+  historicCards = historic_cards(cards, sets)
+  fh = open(os.path.join('priv', 'deck.txt'))
+  deck = fh.read()
+  fh.close()
+  print(txt_deck_to_mtga(deck, historicCards))
+
 if __name__ == '__main__':
-  main()
+  #main()
+  main2()
