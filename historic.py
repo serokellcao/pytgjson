@@ -41,17 +41,26 @@ def txt_deck_to_mtga(deck, mtgaPool):
     ])
 
   mutableDecklist = ['Deck']
+  mutableErrors = []
   for qtyAndNameTxt in deck.splitlines():
     if qtyAndNameTxt == 'Sideboard':
       mutableDecklist.extend(['', 'Sideboard'])
       continue
     qtyAndName = qtyAndNameTxt.split(' ', 1)
+    if len(qtyAndName) != 2:
+      if qtyAndNameTxt:
+        mutableErrors.append(qtyAndNameTxt)
+      continue
     qty = qtyAndName[0]
     name = qtyAndName[1]
-    mutableDecklist.append(mk_mtga_deck_entry(
-      mtgaPool, qtyAndNameTxt, name
-    ))
-  return '\n'.join(mutableDecklist)
+    try:
+      mutableDecklist.append(mk_mtga_deck_entry(
+        mtgaPool, qtyAndNameTxt, name
+      ))
+    except:
+      mutableErrors.append(qtyAndNameTxt)
+      continue
+  return ('\n'.join(mutableDecklist), mutableErrors)
 
 def all_cards(source_file):
   fh = open(source_file)

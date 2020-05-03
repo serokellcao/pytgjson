@@ -1,1 +1,16 @@
-<html><pre>{{ result.mtga_deck }}</pre></html>
+<html>
+  <body style="font-size: x-large; background: #000; color: #700;">
+    {% if result.mtga_deck[1]|length > 0 %}
+    <div>
+      Failed to parse:
+      <ul>
+        {% for not_found in result.mtga_deck[1] %}
+        <li>{{ not_found }}</li>
+	{% endfor %}
+      </ul>
+      Best-effort list:
+    </div>
+    {% endif %}
+    <pre>{{ result.mtga_deck[0] }}</pre>
+  </body>
+</html>
