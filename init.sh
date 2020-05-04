@@ -1,3 +1,5 @@
+mkdir result
+
 mkdir priv
 cd priv
 wget https://www.mtgjson.com/files/AllCards.json.zip

@@ -2,14 +2,17 @@ from flask import Flask, render_template, request
 from historic import all_cards_priv, all_sets_priv, historic_cards, txt_deck_to_mtga
 
 import pprint
+import json
 pp = pprint.PrettyPrinter(indent=4)
+import os
 
 app = Flask(__name__)
 
-cards = all_cards_priv()
-sets  = all_sets_priv()
-
-historicCards = historic_cards(cards, sets)
+# RENAME TO MTGA.JSON # fh = open(os.path.join('result', 'HistoricCards.mtga.json'))
+fh = open(os.path.join('result', 'HistoricCards.extended.json'))
+fc = fh.read()
+fh.close()
+historicCards = json.loads(fc)
 
 @app.route('/')
 def query():
