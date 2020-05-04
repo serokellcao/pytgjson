@@ -41,15 +41,15 @@ def txt_deck_to_mtga(deck, mtgaPool):
   def unsplit_maybe(eitherSplitOrWholesome):
     eitherPartsOrWholesome = eitherSplitOrWholesome.split(' // ')
     if len(eitherPartsOrWholesome) == 1:
-      return eitherSplitOrWholesome # wholesome
+      return [eitherSplitOrWholesome, eitherSplitOrWholesome] # Non-split card
     else:
-      pp.pprint(eitherPartsOrWholesome[0])
-      return eitherPartsOrWholesome[0] # split
+      return get_split(eitherPartsOrWholesome[0], mtgaPool) # Split-card
 
-  def mk_mtga_deck_entry(mtgaPool, qan, name):
+  def mk_mtga_deck_entry(mtgaPool, qan, nameAndDisplayName):
+    [ name, display ] = nameAndDisplayName
     return ' '.join(
       [
-        qan,
+        qty + ' ' + display,
         '(' + get_next_set(mtgaPool, name) + ')',
         get_next_collector_number(mtgaPool, name)
       ]
@@ -67,10 +67,10 @@ def txt_deck_to_mtga(deck, mtgaPool):
         mutableErrors.append(qtyAndNameTxt)
       continue
     qty = qtyAndName[0]
-    name = unsplit_maybe(qtyAndName[1])
+    nameAndDisplayName = unsplit_maybe(qtyAndName[1])
     try:
       mutableDecklist.append(mk_mtga_deck_entry(
-        mtgaPool, unsplit_maybe(qtyAndNameTxt), name
+        mtgaPool, qty, nameAndDisplayName
       ))
     except:
       mutableErrors.append(qtyAndNameTxt)
@@ -123,8 +123,33 @@ def run_monad_filtermap(cards, fs):
   #return ('MONAD_FILTERMAP', mutableAcc)
   return mutableAcc
 
+def get_split(prefix, cards):
+  #pp.pprint([
+  #  "Searching for", prefix,
+  #  next(x['name'] for x in cards.values() if x['name'] == prefix)
+	#])
+  [name, names, types] = next(
+    [x['name'], x['names'], x['types']] for x in cards.values() if prefix in x['name']
+  )
+  pp.pprint(["Unpacked some stuff", [ name, names, types ]])
+  if 'Creature' in types:
+    return [name, name]
+  else:
+    return [name, ' // '.join(names)]
+
 def get_printing_info(card, set, sets):
-  return next(x for x in sets[set]['cards'] if x['name'] == card['name'])
+  #pp.pprint(["Getting info of", card['name']])
+  any = next(
+    x for x in sets[set]['cards'] if x['name'] == card['name']
+  )
+  try:
+    nonPromo = next(
+      x for x in sets[set]['cards'] if x['name'] == card['name'] and not (x.get('isPromo', False))
+    )
+    return nonPromo
+  except:
+    return any
+
 
 def add_printings_info_curried(sets):
   def add_set_info(card):
@@ -185,6 +210,8 @@ def get_next_set(cards, name):
 
 def get_next_collector_number(cards, name):
   set = cards[name]['printings'][0] # TODO make it faster.
+  #if (name == "Murderous Rider"):
+  #  pp.pprint(["Adventures are really special", cards[name]])
   return cards[name]['printings_info'][set]['number']
 
 def dump_cards(name, cards):
