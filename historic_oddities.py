@@ -1,5 +1,6 @@
 def oddities():
   return {
+# HA
     "Inexorable Tide": {"set": "SOM", "number": 35},
     "Hypnotic Specter": {"set": "M10", "number": 100},
     "Virulent Plague": {"set": "DTK", "number": 125},
@@ -43,7 +44,16 @@ def oddities():
     "Ornithopter": {"set": "M10", "number": 216},
     "Mind Stone": {"set": "WTH", "number": 153},
     "Darksteel Reactor": {"set": "DST", "number": 114},
-    "Platinum Angel": {"set": "M10", "number": 218}
+    "Platinum Angel": {"set": "M10", "number": 218},
+  }
+
+def promo_oddities():
+  return {
+# PANA
+    "The Gitrog Monster": {"set": "SOI", "number": 245},
+    "Talrand, Sky Summoner": {"set": "M13", "number": 72},
+    "Rhys the Redeemed": {"set": "SHM", "number": 237},
+    "Bladewing the Risen": {"set": "SCG", "number": 136},
   }
 
 def discrepancies(x):

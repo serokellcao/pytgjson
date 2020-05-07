@@ -1,7 +1,7 @@
 import json
 import os
 import pprint
-from historic_oddities import oddities, discrepancies
+from historic_oddities import oddities, discrepancies, promo_oddities
 pp = pprint.PrettyPrinter(indent=4)
 
 # We will build a weird monad here, that runs a function
@@ -29,8 +29,13 @@ def historic_cards(cards, sets, fs=[]):
     add_printings_info_curried(sets),
     oddity_fixup_curried2(oddities(), sets)
   ]
-  do.extend(fs)
-  return run_monad_filtermap(cards, do)
+  #do.extend(fs)
+  regularWithHA = run_monad_filtermap(cards, do)
+  do1 = [
+    oddity_fixup_curried2(promo_oddities(), sets, keepOther=False)
+  ]
+  PANA = run_monad_filtermap(cards, do1)
+  return run_monad_filtermap({**PANA, **regularWithHA}, fs)
 
 def histoic_peasant_cards(cards, sets, fs=[]):
   do = [ keep_peasant ]
@@ -170,7 +175,7 @@ def was_printed_in_sets(card, sets):
 def keep_historic_printings(card):
   return was_printed_in_sets(card, historic_sets())
 
-def oddity_fixup_curried2(oddities, sets):
+def oddity_fixup_curried2(oddities, sets, keepOther=True):
   def oddity_fixup(card):
     if card['name'] in oddities:
       mutableAcc = {}
@@ -183,7 +188,7 @@ def oddity_fixup_curried2(oddities, sets):
                 }
               )
     else:
-      return ( True, {} )
+      return ( keepOther, {} )
   return oddity_fixup
 
 def fixup_set_discrepancies_curried(discrepancies_fn):
